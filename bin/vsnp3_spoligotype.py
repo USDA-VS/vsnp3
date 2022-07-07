@@ -13,9 +13,9 @@ import textwrap
 from collections import OrderedDict
 import multiprocessing
 multiprocessing.set_start_method('spawn', True)
-from concurrent import futures
 from dask import delayed
 from Bio.SeqIO.QualityIO import FastqGeneralIterator
+import subprocess
 
 from vsnp3_file_setup import Setup
 from vsnp3_file_setup import bcolors
@@ -31,63 +31,86 @@ class Spoligo(Setup):
         self.print_run_time('Spoligotype')
         self.cpu_count_half = int(self.cpus / 2)
         real_path = os.path.dirname(os.path.realpath(__file__))
-        self.spoligo_db = real_path + "/../dependencies/spoligotype_db.txt" 
-        spoligo_dictionary = {}
-        spoligo_dictionary["spacer01"] = ["TGATCCAGAGCCGGCGACCCTCTAT", "ATAGAGGGTCGCCGGCTCTGGATCA"]
-        spoligo_dictionary["spacer02"] = ["CAAAAGCTGTCGCCCAAGCATGAGG", "CCTCATGCTTGGGCGACAGCTTTTG"]
-        spoligo_dictionary["spacer03"] = ["CCGTGCTTCCAGTGATCGCCTTCTA", "TAGAAGGCGATCACTGGAAGCACGG"]
-        spoligo_dictionary["spacer04"] = ["ACGTCATACGCCGACCAATCATCAG", "CTGATGATTGGTCGGCGTATGACGT"]
-        spoligo_dictionary["spacer05"] = ["TTTTCTGACCACTTGTGCGGGATTA", "TAATCCCGCACAAGTGGTCAGAAAA"]
-        spoligo_dictionary["spacer06"] = ["CGTCGTCATTTCCGGCTTCAATTTC", "GAAATTGAAGCCGGAAATGACGACG"]
-        spoligo_dictionary["spacer07"] = ["GAGGAGAGCGAGTACTCGGGGCTGC", "GCAGCCCCGAGTACTCGCTCTCCTC"]
-        spoligo_dictionary["spacer08"] = ["CGTGAAACCGCCCCCAGCCTCGCCG", "CGGCGAGGCTGGGGGCGGTTTCACG"]
-        spoligo_dictionary["spacer09"] = ["ACTCGGAATCCCATGTGCTGACAGC", "GCTGTCAGCACATGGGATTCCGAGT"]
-        spoligo_dictionary["spacer10"] = ["TCGACACCCGCTCTAGTTGACTTCC", "GGAAGTCAACTAGAGCGGGTGTCGA"]
-        spoligo_dictionary["spacer11"] = ["GTGAGCAACGGCGGCGGCAACCTGG", "CCAGGTTGCCGCCGCCGTTGCTCAC"]
-        spoligo_dictionary["spacer12"] = ["ATATCTGCTGCCCGCCCGGGGAGAT", "ATCTCCCCGGGCGGGCAGCAGATAT"]
-        spoligo_dictionary["spacer13"] = ["GACCATCATTGCCATTCCCTCTCCC", "GGGAGAGGGAATGGCAATGATGGTC"]
-        spoligo_dictionary["spacer14"] = ["GGTGTGATGCGGATGGTCGGCTCGG", "CCGAGCCGACCATCCGCATCACACC"]
-        spoligo_dictionary["spacer15"] = ["CTTGAATAACGCGCAGTGAATTTCG", "CGAAATTCACTGCGCGTTATTCAAG"]
-        spoligo_dictionary["spacer16"] = ["CGAGTTCCCGTCAGCGTCGTAAATC", "GATTTACGACGCTGACGGGAACTCG"]
-        spoligo_dictionary["spacer17"] = ["GCGCCGGCCCGCGCGGATGACTCCG", "CGGAGTCATCCGCGCGGGCCGGCGC"]
-        spoligo_dictionary["spacer18"] = ["CATGGACCCGGGCGAGCTGCAGATG", "CATCTGCAGCTCGCCCGGGTCCATG"]
-        spoligo_dictionary["spacer19"] = ["TAACTGGCTTGGCGCTGATCCTGGT", "ACCAGGATCAGCGCCAAGCCAGTTA"]
-        spoligo_dictionary["spacer20"] = ["TTGACCTCGCCAGGAGAGAAGATCA", "TGATCTTCTCTCCTGGCGAGGTCAA"]
-        spoligo_dictionary["spacer21"] = ["TCGATGTCGATGTCCCAATCGTCGA", "TCGACGATTGGGACATCGACATCGA"]
-        spoligo_dictionary["spacer22"] = ["ACCGCAGACGGCACGATTGAGACAA", "TTGTCTCAATCGTGCCGTCTGCGGT"]
-        spoligo_dictionary["spacer23"] = ["AGCATCGCTGATGCGGTCCAGCTCG", "CGAGCTGGACCGCATCAGCGATGCT"]
-        spoligo_dictionary["spacer24"] = ["CCGCCTGCTGGGTGAGACGTGCTCG", "CGAGCACGTCTCACCCAGCAGGCGG"]
-        spoligo_dictionary["spacer25"] = ["GATCAGCGACCACCGCACCCTGTCA", "TGACAGGGTGCGGTGGTCGCTGATC"]
-        spoligo_dictionary["spacer26"] = ["CTTCAGCACCACCATCATCCGGCGC", "GCGCCGGATGATGGTGGTGCTGAAG"]
-        spoligo_dictionary["spacer27"] = ["GGATTCGTGATCTCTTCCCGCGGAT", "ATCCGCGGGAAGAGATCACGAATCC"]
-        spoligo_dictionary["spacer28"] = ["TGCCCCGGCGTTTAGCGATCACAAC", "GTTGTGATCGCTAAACGCCGGGGCA"]
-        spoligo_dictionary["spacer29"] = ["AAATACAGGCTCCACGACACGACCA", "TGGTCGTGTCGTGGAGCCTGTATTT"]
-        spoligo_dictionary["spacer30"] = ["GGTTGCCCCGCGCCCTTTTCCAGCC", "GGCTGGAAAAGGGCGCGGGGCAACC"]
-        spoligo_dictionary["spacer31"] = ["TCAGACAGGTTCGCGTCGATCAAGT", "ACTTGATCGACGCGAACCTGTCTGA"]
-        spoligo_dictionary["spacer32"] = ["GACCAAATAGGTATCGGCGTGTTCA", "TGAACACGCCGATACCTATTTGGTC"]
-        spoligo_dictionary["spacer33"] = ["GACATGACGGCGGTGCCGCACTTGA", "TCAAGTGCGGCACCGCCGTCATGTC"]
-        spoligo_dictionary["spacer34"] = ["AAGTCACCTCGCCCACACCGTCGAA", "TTCGACGGTGTGGGCGAGGTGACTT"]
-        spoligo_dictionary["spacer35"] = ["TCCGTACGCTCGAAACGCTTCCAAC", "GTTGGAAGCGTTTCGAGCGTACGGA"]
-        spoligo_dictionary["spacer36"] = ["CGAAATCCAGCACCACATCCGCAGC", "GCTGCGGATGTGGTGCTGGATTTCG"]
-        spoligo_dictionary["spacer37"] = ["CGCGAACTCGTCCACAGTCCCCCTT", "AAGGGGGACTGTGGACGAGTTCGCG"]
-        spoligo_dictionary["spacer38"] = ["CGTGGATGGCGGATGCGTTGTGCGC", "GCGCACAACGCATCCGCCATCCACG"]
-        spoligo_dictionary["spacer39"] = ["GACGATGGCCAGTAAATCGGCGTGG", "CCACGCCGATTTACTGGCCATCGTC"]
-        spoligo_dictionary["spacer40"] = ["CGCCATCTGTGCCTCATACAGGTCC", "GGACCTGTATGAGGCACAGATGGCG"]
-        spoligo_dictionary["spacer41"] = ["GGAGCTTTCCGGCTTCTATCAGGTA", "TACCTGATAGAAGCCGGAAAGCTCC"]
-        spoligo_dictionary["spacer42"] = ["ATGGTGGGACATGGACGAGCGCGAC", "GTCGCGCTCGTCCATGTCCCACCAT"]
-        spoligo_dictionary["spacer43"] = ["CGCAGAATCGCACCGGGTGCGGGAG", "CTCCCGCACCCGGTGCGATTCTGCG"]
-        self.spoligo_dictionary = spoligo_dictionary
-
+        self.spoligo_db = real_path + "/../dependencies/spoligotype_db.txt"
+        self.spoligo_fasta = real_path + "/../dependencies/spoligo_spacers.fasta"
+    
     def finding_sp(self, spacer_sequence):
         # spacer_id, spacer_sequence = spacer_id_and_spacer_sequence
         total_count = 0
         total_finds = 0
-        #if total < 6: # doesn't make a big different.  Might as well get full counts
-        #total += sum(seq.count(x) for x in (v)) #v=list of for and rev spacer
+
         total_finds = [len(regex.findall("(" + spacer + "){s<=1}", self.seq_string)) for spacer in spacer_sequence]
+
         for number in total_finds:
             total_count += number
+
         return (total_count)
+
+    def count_spacer_occurence(self):
+        otal_count = 0
+        total_finds = 0
+
+        if len(self.FASTQ_list) == 1:
+            cmd = ['bbduk.sh',
+                  'in={}'.format(self.FASTQ_list[0]),
+                  'ref={}'.format(self.spoligo_fasta),
+                  'k=21', 'rcomp=t',
+                  'edist=1',  # up to 1 missmatch
+                  'maskmiddle=f', # Do not treat the middle base of a kmer as a wildcard
+                  'stats=stats.txt',
+                  'ow=t']
+        else:
+            cmd = ['bbduk.sh',
+                  'in={}'.format(self.FASTQ_list[0]),
+                  'in2={}'.format(self.FASTQ_list[1]),
+                  'ref={}'.format(self.spoligo_fasta),
+                  'k=21', 'rcomp=t',
+                  'edist=1',  # up to 1 missmatch
+                  'maskmiddle=f', # Do not treat the middle base of a kmer as a wildcard
+                  'stats=stats.txt',
+                  'ow=t']
+
+        subprocess.run(cmd)
+
+        # Parse stats file
+        """
+        #File /home/bioinfo/analyses/vsnp3_test_spoligo/SRR16058435_R1.fastq.gz
+        #Total  822714
+        #Matched    799 0.09712%
+        #Name   Reads   ReadsPct
+        spacer25    62  0.00754%
+        spacer02    48  0.00583%
+        """
+
+        count_summary = dict()
+        with open('stats.txt', 'r') as f:
+            for line in f:
+                line = line.rstrip()
+                if not line:
+                    continue
+
+                if line.startswith('#'):
+                    continue
+                else:
+                    field_list = line.split('\t')
+                    count_summary[field_list[0]] = int(field_list[1])
+
+        # Fill any spacers with zero counts
+        # Parse spacer fasta file
+        spacer_list = list()
+        with open(self.spoligo_fasta, 'r') as f:
+            for line in f:
+                line = line.rstrip()
+                if not line:
+                    continue
+                if line.startswith('>'):
+                    spacer_list.append(line[1:])  # Drop the leading ">"
+
+        for spacer_id in spacer_list:
+            if spacer_id not in count_summary:
+                count_summary[spacer_id] = 0
+
+        return count_summary
 
     def binary_to_octal(self, binary):
         #binary_len = len(binary)
@@ -124,37 +147,9 @@ class Spoligo(Setup):
         db_binarycode = None
         sample_binary = None
 
-        seq_string = ""
-        count_summary = {}
-        sequence_list = []
-        try:
-            for fastq in self.FASTQ_list:
-                with gzip.open(fastq, "rt") as in_handle:
-                    # all 3, title and seq and qual, were needed
-                    count=0
-                    for title, seq, qual in FastqGeneralIterator(in_handle):
-                        if count < 1000000: #million read max
-                            count+=1
-                            sequence_list.append(seq)
-        except TypeError:
-            # TypeError if not paired
-            pass
-
-        if len(seq) > 70:
-            #Three 10bp sequences dispersed across repeat region, forward and reverse
-            capture_spacer_sequence = re.compile(".*TTTCCGTCCC.*|.*GGGACGGAAA.*|.*TCTCGGGGTT.*|.*AACCCCGAGA.*|.*TGGGTCTGAC.*|.*GTCAGACCCA.*")
-            sequence_list = list(filter(capture_spacer_sequence.match, sequence_list))
-            seq_string = "".join(sequence_list)
-        else:
-            #if <= 70 then search all reads, not just those with repeat regions.
-            seq_string = "".join(sequence_list)
-        self.seq_string = seq_string
-        for spacer_id, spacer_sequence in self.spoligo_dictionary.items():
-            count = delayed(self.finding_sp)(spacer_sequence)
-            count_summary.update({spacer_id: count})
-        pull = delayed(count_summary)
-        count_summary = pull.compute()
+        count_summary = self.count_spacer_occurence()
         count_summary = OrderedDict(sorted(count_summary.items()))
+
         spoligo_binary_dictionary = {}
         self.call_cut_off = 4
         for k, v in count_summary.items():
@@ -259,4 +254,4 @@ if __name__ == "__main__": # execute if directly access by the interpreter
     if args.debug is False:
         shutil.rmtree(temp_dir)
 
-# Updated 2021 by Tod Stuber
+# Updated July 2022 by Marc-Olivier Duceppe
