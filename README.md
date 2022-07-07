@@ -14,6 +14,7 @@ Anaconda with Python 3.7 or greater, 3.9 recommended.
 
 ```
 conda install vsnp3=3.06 -c bioconda
+conda install -y -c bioconda bbmap
 ```
 
 See [link](https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) for managing environment.
